@@ -13,12 +13,12 @@ directory install_dir do
 end
 
 # Download Beanstalk Console
-remote_file "#{install_dir}/beanstalk_console.zip" do
+remote_file "#{install_dir}/beanstalk_console.tar.gz" do
   owner node['apache']['user']
   group node['apache']['group']
   mode 00644
   action :create_if_missing
-  source "https://github.com/ptrofimov/beanstalk_console/archive/master.zip"
+  source "https://github.com/ptrofimov/beanstalk_console/archive/master.tar.gz"
 end
 
 # Extract
@@ -27,9 +27,10 @@ bash 'extract-beanstalkconsole' do
 	group node['apache']['group']
 	cwd install_dir
 	code <<-EOH
-		rm -rf *
-		unzip master.zip
-		rm -rf master.zip
+		tar zxvf beanstalk_console.tar.gz
+		rm -f beanstalk_console.tar.gz
+		mv beanstalk_console-master/* .
+		rm -rf beanstalk_console-master
 	EOH
 	not_if { ::File.exists?("#{install_dir}/README.md")}
 end
@@ -46,4 +47,9 @@ end
 web_app "beanstalk_console" do
   docroot node['beanstalk_console']['directory']
   log_dir node['apache']['log_dir'] 
+end
+
+# Disable default vhost
+apache_site "000-default" do
+  enable false
 end
