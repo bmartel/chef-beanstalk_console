@@ -1,0 +1,26 @@
+<VirtualHost *:80>
+  Alias /<%= @node[:beanstalk_console][:alias] %> <%= @params[:docroot] %>
+
+  <Directory <%= @params[:docroot] %>>
+    EnableSendfile Off
+    Options FollowSymLinks
+    AllowOverride <%= [@params[:allow_override] || "All" ].flatten.join " " %>
+    Order allow,deny
+    Allow from all
+  </Directory>
+
+  <Directory />
+    Options FollowSymLinks
+    AllowOverride None
+  </Directory>
+
+  php_flag display_startup_errors on
+  php_flag display_errors on
+  php_flag html_errors on
+  php_flag log_errors on
+  php_value error_log  <%= @node[:apache][:log_dir] %>/<%= @params[:name] %>-phperrors.log
+
+  LogLevel info
+  ErrorLog <%= @node[:apache][:log_dir] %>/<%= @params[:name] %>-error.log
+  CustomLog <%= @node[:apache][:log_dir] %>/<%= @params[:name] %>-access.log combined
+</VirtualHost>
